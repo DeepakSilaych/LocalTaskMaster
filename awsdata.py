@@ -57,16 +57,7 @@ def save_station_data(station, data):
     stationdata(
         {
             'station': station['station_id'],
-            'rainfall': rainfall,
-            'temperature': temperature,
-            'humidity': humidity,
-            'wind_speed': wind_speed
+            'rainfall': rainfall
         }
     )
     
-try :
-    fetch_and_store_data()
-    print("Data fetched and stored successfully")
-except:
-    print("Failed to fetch and store data")
-   

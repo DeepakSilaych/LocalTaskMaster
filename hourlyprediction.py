@@ -136,6 +136,3 @@ def predict_hourly():
                 'hr_24_rainfall': temp.values()
             }
         )
-
-
-predict_hourly()

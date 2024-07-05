@@ -120,5 +120,3 @@ def get_lat_long(location):
 
 def extract_locations(tweet, pattern):
     return pattern.findall(tweet)
-
-tweetpipeline()

@@ -4,7 +4,6 @@ import shutil
 import datetime as dt
 from datetime import datetime, timedelta
 import os 
-from django.conf import settings
 
 
 def download_gfs_data():

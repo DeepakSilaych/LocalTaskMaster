@@ -448,7 +448,3 @@ def dailyprediction():
                 'day3': Day3
             }
         )
-
-
-
-dailyprediction()

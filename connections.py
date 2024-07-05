@@ -1,8 +1,8 @@
 import requests
 import json
 
-# BASE_URL = 'https://api.mumbaiflood.in/db/'
-BASE_URL = 'http://localhost:8000/db/'
+BASE_URL = 'https://api.mumbaiflood.in/db/'
+# BASE_URL = 'http://localhost:8000/db/'
 
 def awsstation():
     url = BASE_URL + 'awsstations/'
