@@ -29,7 +29,7 @@ def system_log():
         print (e)
 
 
-schedule.every().hour.at(":5").do(every_hour)
+schedule.every().hour.at(":05").do(every_hour)
 schedule.every().minute.do(system_log)
 
 while True:

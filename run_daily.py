@@ -6,7 +6,7 @@ from connections import log, systemlog
 
 
 
-def every_hour():
+def every_day():
     try :
         try :
             download_gfs_data()
@@ -38,7 +38,7 @@ def system_log():
         print (e)
 
 
-schedule.every().daily.at("16:20").do(every_hour)
+schedule.every().day.at("16:20").do(every_day)
 schedule.every().minute.do(system_log)
 
 while True:
