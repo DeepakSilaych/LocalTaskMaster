@@ -43,7 +43,7 @@ def tweetdata(data):
 
 def log(data):
     try:
-        url = Monitor + 'log/'
+        url = Monitor + 'logs/'
         response = requests.post(url, data)
         return response.json()
     except Exception as e:

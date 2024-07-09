@@ -27,8 +27,9 @@ def system_log():
         systemlog({'code':'AWS Stationss'})
     except Exception as e:
         print (e)
+    
 
-schedule.every().hour.at(":0").do(every_15_min)
+schedule.every().hour.at(":00").do(every_15_min)
 schedule.every().hour.at(":15").do(every_15_min)
 schedule.every().hour.at(":30").do(every_15_min)
 schedule.every().hour.at(":45").do(every_15_min)
