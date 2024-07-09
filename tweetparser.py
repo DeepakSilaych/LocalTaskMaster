@@ -1,14 +1,16 @@
 import re
+import nltk
+from nltk.corpus import stopwords
 from transformers import pipeline
 from geopy.geocoders import Nominatim
 from geopy.exc import GeopyError
 import tweepy
 import datetime
-import pandas as pd
-import numpy as np
 from datetime import timedelta
 from connections import tweetdata
 
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
 
 def tweetpipeline():
     tweets = get_tweets(BEARER_TOKEN)
@@ -18,12 +20,12 @@ def tweetpipeline():
         if processed_tweet['locations']:
             for location, coords in processed_tweet['locations'].items():
                 tweetdata({
-                        'tweet': processed_tweet['text'],
-                        'latitude': coords[0],
-                        'longitude': coords[1],
-                        'location': location,
-                        'sentiment': processed_tweet['sentiment']['label'],
-                        'timestamp': time,
+                    'tweet': processed_tweet['text'],
+                    'latitude': coords[0],
+                    'longitude': coords[1],
+                    'location': location,
+                    'sentiment': processed_tweet['sentiment']['label'],
+                    'timestamp': time,
                 })
         else:
             tweetdata({
@@ -35,7 +37,6 @@ def tweetpipeline():
                 'timestamp': time,
             })
 
-
 def get_tweets(BEARER_TOKEN):
     client = tweepy.Client(bearer_token=BEARER_TOKEN)
     date = datetime.datetime.now() - timedelta(days=1, hours=5.51)
@@ -46,15 +47,13 @@ def get_tweets(BEARER_TOKEN):
     queries = ['mumbairains -is:retweet', 'mumbairain -is:retweet', 'mumbaiflood -is:retweet']
 
     all_tweets = []
-    for query in queries :
+    for query in queries:
         tweets = client.search_recent_tweets(query=query, tweet_fields=['conversation_id','created_at','text'], start_time=start_time, end_time=end_time, max_results=30)
         if tweets.data:
             for tweet in tweets.data:
                 all_tweets.append(tweet.text)
 
     return all_tweets
-
-BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAIfomwEAAAAAlBC3KnzchShxMhmQj8Ctg8J0jZw%3Dez8WeHlWy9AQ9rfw9apkFDD79Oe9nV9KWXNoq7T68kbTIIr93k'
 
 stations_western = [
     "Churchgate", "Marine Lines", "Grant Road", "Charni Road", "Mumbai Central", "Mahalaxmi", 
@@ -100,7 +99,12 @@ def process_tweet(tweet):
             "sentiment": sentiment
         }
     
-    location_coords = {loc: get_lat_long(loc) for loc in locations}
+    location_coords = {}
+    for loc in locations:
+        cleaned_location = ' '.join([word for word in loc.split() if word.lower() not in stop_words])
+        coords = get_lat_long(cleaned_location)
+        if coords:
+            location_coords[loc] = coords
 
     return {
         "text": tweet,
@@ -113,10 +117,16 @@ def get_lat_long(location):
     try:
         location = geolocator.geocode(location)
         if location:
-            return location.latitude, location.longitude
+            # Check if the coordinates are within Mumbai's lat-long boundaries
+            if 18.89 <= location.latitude <= 19.27 and 72.77 <= location.longitude <= 72.99:
+                return location.latitude, location.longitude
     except GeopyError as e:
         print(f"Error getting coordinates for {location}: {e}")
     return None
 
 def extract_locations(tweet, pattern):
     return pattern.findall(tweet)
+
+if __name__ == "__main__":
+    BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAIfomwEAAAAAlBC3KnzchShxMhmQj8Ctg8J0jZw%3Dez8WeHlWy9AQ9rfw9apkFDD79Oe9nV9KWXNoq7T68kbTIIr93k'
+    tweetpipeline()

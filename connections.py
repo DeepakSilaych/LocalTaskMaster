@@ -2,7 +2,8 @@ import requests
 import json
 
 BASE_URL = 'https://api.mumbaiflood.in/db/'
-# BASE_URL = 'http://localhost:8000/db/'
+Monitor = 'https://monitor.mumbaiflood.in/'
+
 
 def awsstation():
     url = BASE_URL + 'awsstations/'
@@ -37,5 +38,19 @@ def updatetrainstation(data):
 
 def tweetdata(data):
     url = BASE_URL + 'tweet/'
+    response = requests.post(url, data)
+    return response.json()
+
+def log(data):
+    try:
+        url = Monitor + 'log/'
+        response = requests.post(url, data)
+        return response.json()
+    except Exception as e:
+        print(e)
+        return None
+
+def systemlog(data):
+    url = Monitor + 'systemlog/'
     response = requests.post(url, data)
     return response.json()
