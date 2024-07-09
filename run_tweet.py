@@ -3,7 +3,7 @@ import schedule
 import time
 from connections import log, systemlog
 
-def every_hour():
+def everyday_11_50():
     try :
         tweetpipeline()
         log({
@@ -26,7 +26,7 @@ def system_log():
     except Exception as e:
         print (e)
 
-schedule.every().hour.at(":5").do(every_hour)
+schedule.every().day.at("11:50").do(everyday_11_50)
 schedule.every().minute.do(system_log)
 
 while True:
