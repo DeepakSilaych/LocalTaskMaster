@@ -7,7 +7,7 @@ import time
 
 def every_15_min():
     try :
-        # fetch_and_store_data()
+        fetch_and_store_data()
         log({
             'log_text' : 'Station Data Saved',
             'priority' : 0
