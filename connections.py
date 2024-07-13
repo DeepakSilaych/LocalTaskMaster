@@ -16,6 +16,12 @@ def stationdata(data):
     response = requests.post(url, data)
     return response.json()
 
+def awsquaterdata(data):
+    url = BASE_URL + 'awsdataforquater/'
+    response = requests.post(url, data)
+    return response.json()
+
+
 def fetchstationdata(station):
     url = BASE_URL + 'stationdata/'
     response = requests.get(url, station)
@@ -31,9 +37,9 @@ def hourwiseprediction(data):
     response = requests.post(url, data)
     return response.json()
 
-def updatetrainstation(data):
+def updatetrainstation():
     url = BASE_URL + 'updatetrainstation/'
-    response = requests.post(url, data)
+    response = requests.get(url)
     return response.json()
 
 def tweetdata(data):

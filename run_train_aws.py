@@ -1,5 +1,5 @@
-from awsdata import fetch_and_store_data
-from connections import log, systemlog
+from aws_quater_data import fetch_and_store_quater_data
+from connections import log, systemlog, updatetrainstation
 
 import schedule
 import time
@@ -7,7 +7,8 @@ import time
 
 def every_15_min():
     try :
-        fetch_and_store_data()
+        fetch_and_store_quater_data()
+        updatetrainstation()
         log({
             'log_text' : 'Station Data Saved',
             'priority' : 0

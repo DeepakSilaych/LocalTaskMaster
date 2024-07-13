@@ -13,6 +13,7 @@ nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
 def tweetpipeline():
+    BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAIfomwEAAAAAlBC3KnzchShxMhmQj8Ctg8J0jZw%3Dez8WeHlWy9AQ9rfw9apkFDD79Oe9nV9KWXNoq7T68kbTIIr93k'
     tweets = get_tweets(BEARER_TOKEN)
     time = datetime.datetime.now()
     for tweet in tweets:
@@ -126,7 +127,3 @@ def get_lat_long(location):
 
 def extract_locations(tweet, pattern):
     return pattern.findall(tweet)
-
-if __name__ == "__main__":
-    BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAIfomwEAAAAAlBC3KnzchShxMhmQj8Ctg8J0jZw%3Dez8WeHlWy9AQ9rfw9apkFDD79Oe9nV9KWXNoq7T68kbTIIr93k'
-    tweetpipeline()

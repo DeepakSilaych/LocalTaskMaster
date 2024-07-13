@@ -1,4 +1,3 @@
-
 import pygrib
 import pandas as pd
 from datetime import timedelta
@@ -12,10 +11,9 @@ import copy
 from connections import awsstation, daywiseprediction
 
 def dailyprediction():
-
     forecast_hr = np.arange(15,163,3)
-    latbounds = [ 18.5 - 0.25 , 19.5 ]
-    lonbounds = [ 72.5 , 73.5 + 0.25 ]
+    latbounds = [18.5-0.25,19.5]
+    lonbounds = [72.5, 73.5+0.25]
     time_from_ref = np.arange(15,163,3)
     columns_prec = []
 
@@ -24,29 +22,20 @@ def dailyprediction():
             for j in np.arange(19.5,18.25,-0.25):
                 for k in np.arange(72.5,73.75,0.25):
                     columns_prec.append(f'{i}_{j}_{k}_{time_steps:03d}')
-
-
     x = dt.datetime.now().replace(second=0, microsecond=0)
-
-
     day= x.day
+    #day= 12
     month = x.month
     year = x.year
 
-
     start_day = f'{year}-{month}-{day}'
-    # end_day = pd.to_datetime(start_day) + timedelta(hours=24)
-
-
+    #end_day = pd.to_datetime(start_day) + timedelta(hours=24)
     data_prec = pd.DataFrame(index =[pd.to_datetime(start_day) + timedelta(hours=6)], columns = columns_prec)
 
-
-    root_directory = os.path.join('./files', f"{day:02d}-{month:02d}-{year}")
-
+    root_directory = os.path.join('.\\files', f"{day:02d}-{month:02d}-{year}")
 
     counter =0
     for time_step in data_prec.index:
-        
         year = time_step.year
         month = time_step.month
         day = time_step.day
@@ -62,10 +51,7 @@ def dailyprediction():
             
             filename =f'gfs.t{ref_time:02d}z.pgrb2.0p25.f{time_lag:03d}'
             #directory = find_key(directory_names, filename)
-            
-            
-            
-            grib = f'{root_directory}/{filename}'
+            grib = f'{root_directory}\\{filename}'
             grbs = pygrib.open(grib)
             variable_name_to_select = 'Precipitation rate'  # Replace with the variable name you want
 
@@ -73,11 +59,11 @@ def dailyprediction():
             for grb in grbs.select(name=variable_name_to_select):
                 # Access the data and metadata of the selected variable
                 data = grb.values  # Data values
-                # latitudes, longitudes = grb.latlons()  # Latitudes and longitudes
-                # parameter_name = grb.name  # Parameter name (e.g., 'Temperature', 'Wind speed', etc.)
-                # level_type = grb.typeOfLevel  # Level type (e.g., 'surface', 'isobaricInhPa', etc.)
-                # level_value = grb.level  # Level value (e.g., 850, 1000, etc.)
-                # valid_time = grb.validDate  # Valid time of the data
+                latitudes, longitudes = grb.latlons()  # Latitudes and longitudes
+                parameter_name = grb.name  # Parameter name (e.g., 'Temperature', 'Wind speed', etc.)
+                level_type = grb.typeOfLevel  # Level type (e.g., 'surface', 'isobaricInhPa', etc.)
+                level_value = grb.level  # Level value (e.g., 850, 1000, etc.)
+                valid_time = grb.validDate  # Valid time of the data
 
 
             # latitude lower and upper index
@@ -87,8 +73,6 @@ def dailyprediction():
             # longitude lower and upper index
             lonli = 2
             lonui = 7
-
-
 
             time = pd.to_datetime(f'{year}-{month}-{day}') + timedelta(hours = int(int(ref_time) + int(time_lag)))
             data = data[latli:latui,lonli:lonui][::-1]
@@ -110,12 +94,10 @@ def dailyprediction():
         counter += 1
         if (counter)%500 == 0:
             print(f'Loop {counter} Done!')
-            
 
 
     data_prec = data_prec.shift(freq=pd.Timedelta(hours=17, minutes=30))
     data_prec.head()
-
 
     data_prec.columns = map(str, data_prec.columns)
 
@@ -125,32 +107,25 @@ def dailyprediction():
 
     # Use the selected column names to index the DataFrame
     data_prec = data_prec[selected_columns]
-
-    # Display the selected data
+    #Display the selected data
     data_prec
-
 
     data_prec_1=data_prec.iloc[:,:128]
     data_prec_2=data_prec.iloc[:, 128:256]
     data_prec_3=data_prec.iloc[:, 256:384]
 
-
-    # n_features = 16
-    # n_steps = 8
     n_samples_test = data_prec_1.shape[0]
     X_test_prec_cnn_lstm = np.full((n_samples_test,8,4,4),np.nan)
-
 
     for i in range(data_prec_1.shape[0]):
         temp_array = np.full((8,4,4),np.nan)
         counter = 0
-        
+
         for j in np.arange(15,37,3):
-            
             selected_cols = data_prec_1.filter(regex=f'_{j:03d}$')
             temp_array[counter] = selected_cols.iloc[i].values.reshape(4,-1)
             counter +=1
-            
+
         X_test_prec_cnn_lstm[i] = copy.deepcopy(temp_array)
 
 
@@ -160,10 +135,6 @@ def dailyprediction():
     X_test_prec_cnn_lstm_reshaped_1 = np.expand_dims(X_test_prec_cnn_lstm_daily_1, axis=1)
     X_test_prec_cnn_lstm_reshaped_1 = np.moveaxis(X_test_prec_cnn_lstm_reshaped_1, 1, -1)
 
-
-
-    # n_features = 16
-    # n_steps = 8
     n_samples_test = data_prec_2.shape[0]
     X_test_prec_cnn_lstm = np.full((n_samples_test,8,4,4),np.nan)
 
@@ -187,9 +158,6 @@ def dailyprediction():
     X_test_prec_cnn_lstm_reshaped_2 = np.moveaxis(X_test_prec_cnn_lstm_reshaped_2, 1, -1)
 
 
-
-    # n_features = 16
-    # n_steps = 8
     n_samples_test = data_prec_3.shape[0]
     X_test_prec_cnn_lstm = np.full((n_samples_test,8,4,4),np.nan)
 
@@ -213,40 +181,52 @@ def dailyprediction():
     X_test_prec_cnn_lstm_reshaped_3 = np.expand_dims(X_test_prec_cnn_lstm_daily_3, axis=1)
     X_test_prec_cnn_lstm_reshaped_3 = np.moveaxis(X_test_prec_cnn_lstm_reshaped_3, 1, -1)
 
+    stations_ok_merged = sorted(['Andheri', 'B ward', 'Bandra','C ward', 'Chembur', 'D Ward',
+            'Dindoshi','F North', 'F South', 'G South','Gowanpada', 'H West ward', 'K East ward',
+            'Kurla', 'L ward', 'M West ward','Malvani','MCGM 1','Mulund','N ward',
+            'Nariman Fire','S ward','SWD Workshop dadar','Vikhroli','vileparle W', 'Byculla', 'Chincholi', 
+            'Colaba', 'Dahisar', 'K West ward', 'Kandivali','Marol','Memonwada','Rawali camp','Thakare natya','Worli'])
+
+    stations_coordinates = pd.read_excel('.\\models\\Stations_Coordinates.xlsx',header = 0, index_col='Place')
+
 
     lat_lon = []
 
     for i in np.arange(18.5,19.5+0.25,0.25):
-        for j in np.arange(72.5, 73+0.25,0.25):
-
+        for j in np.arange(72.5,73+0.25,0.25):
             lat_lon.append([i,j])
 
     lat_lon = np.array(lat_lon)
     lat_lon=lat_lon.astype(float)
+
+
     def find_closest_pair(lat_lon_array, target_lat, target_lon):
-        # Calculate differences in latitude and longitude
+        #Calculate differences in latitude and longitude
         delta_lat = lat_lon_array[:, 0] - target_lat
         delta_lon = lat_lon_array[:, 1] - target_lon
 
-        # Calculate Euclidean distances
+        #Calculate Euclidean distances
         distances = np.sqrt(delta_lat**2 + delta_lon**2)
 
-        # Find the index of the pair with the minimum distance
+        #Find the index of the pair with the minimum distance
         closest_index = np.argmin(distances)
 
-        # Return the closest pair of latitude and longitude
+        #Return the closest pair of latitude and longitude
         return lat_lon_array[closest_index]
 
-
-    with open(os.path.join('./models', 'daily_threshold.pkl'), 'rb') as f:
+    with open(os.path.join('.\\models', 'daily_threshold.pkl'), 'rb') as f:
         thresholds_dict = pickle.load(f)
 
-        
-    for station in awsstation():
-        stationname = station['name']
-        model_path = os.path.join( './models', 'Lead Day 1', stationname+'_1', 'CNN.h5')
-        model1_path = os.path.join( './models', 'Lead Day 1', stationname+'_1', 'tl.h5')
-        
+
+    for stationFetch in awsstation():
+    #for station in stations_ok_merged:
+        station = stationFetch['name']
+
+        #model_path = os.path.join( '.\\models', 'Lead Day 1', stationname+'_1', 'CNN.h5')
+        #model1_path = os.path.join( '.\\models', 'Lead Day 1', stationname+'_1', 'tl.h5')
+        model_path = os.path.join( '.\\models', 'Lead Day 1', station+'_1', 'CNN.h5')
+        model1_path = os.path.join( '.\\models', 'Lead Day 1', station+'_1', 'tl.h5')
+
         model = load_model(model_path)
         model1 = load_model(model1_path)
 
@@ -256,30 +236,28 @@ def dailyprediction():
         data_GFS_prec_stationwise_testing = {}
         data_GFS_prec_stationwise = {}
 
-        data_GFS_prec_stationwise[stationname] = pd.DataFrame()
-        
-        station_lat = station['latitude']
-        station_lon = station['longitude']
+        data_GFS_prec_stationwise[station] = pd.DataFrame()
+
+        station_lat = stations_coordinates.loc[station,'Lat (N)']
+        station_lon = stations_coordinates.loc[station, 'Long (E)']
 
         closest_lat_lon = find_closest_pair(lat_lon, station_lat, station_lon)
         closest_lat = str(closest_lat_lon[0])
         closest_lon = str(closest_lat_lon[1])
 
         selected_cols_testing = data_prec.filter(regex=f'{closest_lat}_{closest_lon}')
-        
-        data_GFS_prec_stationwise_testing[stationname] = copy.deepcopy(selected_cols_testing)
-        
+
+        data_GFS_prec_stationwise_testing[station] = copy.deepcopy(selected_cols_testing)
+
         data_GFS_prec_stationwise_daily = {}
         data_GFS_prec_stationwise_testing_daily = {}
-        
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'] = pd.DataFrame(index=data_GFS_prec_stationwise_testing[f'{stationname}'].index,columns=['1','2','3'])
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,0] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,0:8].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,1] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,8:16].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,2] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,16:24].sum(axis = 1)
-        
-        y_pred_gfs = np.array(data_GFS_prec_stationwise_testing_daily[f'{stationname}']).astype(float)
-        
 
+        data_GFS_prec_stationwise_testing_daily[f'{station}'] = pd.DataFrame(index=data_GFS_prec_stationwise_testing[f'{station}'].index,columns=['1','2','3'])
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,0] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,0:8].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,1] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,8:16].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,2] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,16:24].sum(axis = 1)
+
+        y_pred_gfs = np.array(data_GFS_prec_stationwise_testing_daily[f'{station}']).astype(float)
         predictions_GFS = y_pred_gfs[:, 0]
 
         GFS = y_pred_gfs[:, 0]
@@ -293,56 +271,67 @@ def dailyprediction():
         Df['GFS3'] = GFS3
         Df['CNN'] = CNN
         Df['TL'] = TL
-        
-        # Retrieve the threshold values for the current station and variable
-        station_thresholds = thresholds_dict[stationname]
-        
+
+
+        #Retrieve the threshold values for the current station and variable
+        station_thresholds = thresholds_dict[station]
+
         # Apply the thresholds for each column
         threshold = station_thresholds['GFS']
+        threshold2 = station_thresholds['GFS2']
+        threshold3 = station_thresholds['GFS3']
+
+
         # Calculate the final values based on thresholds
         Df['Final'] = Df.apply(
             lambda x: x['TL'] if (x['GFS'] > threshold) or (x['GFS2'] > threshold) or (x['GFS3'] > threshold) else x['CNN'],
             axis=1)
-        
-        day1 = Df['Final'].iloc[0]
-        
 
-        model_path = os.path.join( './models', '2DayLead', stationname, 'CNN2122old.h5')
-        model1_path = os.path.join( './models', '2DayLead', stationname, 'tl.h5')
-        
+
+        day1 = Df['Final'].iloc[0]
+        #print(f"Predicted values for station {station}:")
+        #print(day1)
+
+        model_path = os.path.join( '.\\models', '2DayLead', station, 'CNN2122old.h5')
+        model1_path = os.path.join( '.\\models', '2DayLead', station, 'tl.h5')
+
         model = load_model(model_path)
         model1 = load_model(model1_path)
+
+        #     y_test = np.array(data_y_processed_testing_daily[f'{station}']).astype(float)
 
         # Make predictions using the loaded model
         predictions = model.predict(X_test_prec_cnn_lstm_reshaped_2)
         predictions1 = model1.predict(X_test_prec_cnn_lstm_reshaped_2)
-        
+
         data_GFS_prec_stationwise_testing = {}
         data_GFS_prec_stationwise = {}
 
-        data_GFS_prec_stationwise[stationname] = pd.DataFrame()
-        
+        data_GFS_prec_stationwise[station] = pd.DataFrame()
+
+        station_lat = stations_coordinates.loc[station,'Lat (N)']
+        station_lon = stations_coordinates.loc[station, 'Long (E)']
 
         closest_lat_lon = find_closest_pair(lat_lon, station_lat, station_lon)
         closest_lat = str(closest_lat_lon[0])
         closest_lon = str(closest_lat_lon[1])
-
+    
         selected_cols_testing = data_prec.filter(regex=f'{closest_lat}_{closest_lon}')
-        
-        data_GFS_prec_stationwise_testing[stationname] = copy.deepcopy(selected_cols_testing)
-        
+
+        data_GFS_prec_stationwise_testing[station] = copy.deepcopy(selected_cols_testing)
+
         data_GFS_prec_stationwise_daily = {}
         data_GFS_prec_stationwise_testing_daily = {}
-        
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'] = pd.DataFrame(index=data_GFS_prec_stationwise_testing[f'{stationname}'].index,columns=['1','2','3','4','5','6'])
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,0] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,0:8].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,1] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,8:16].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,2] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,16:24].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,3] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,24:32].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,4] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,32:40].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,5] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,40:48].sum(axis = 1)
 
-        y_pred_gfs = np.array(data_GFS_prec_stationwise_testing_daily[f'{stationname}']).astype(float)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'] = pd.DataFrame(index=data_GFS_prec_stationwise_testing[f'{station}'].index,columns=['1','2','3','4','5','6'])
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,0] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,0:8].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,1] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,8:16].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,2] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,16:24].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,3] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,24:32].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,4] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,32:40].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,5] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,40:48].sum(axis = 1)
+
+        y_pred_gfs = np.array(data_GFS_prec_stationwise_testing_daily[f'{station}']).astype(float)
 
         predictions_GFS = y_pred_gfs[:,1]
 
@@ -359,57 +348,65 @@ def dailyprediction():
         Df['GFS4'] = GFS4
         Df['CNN'] = CNN
         Df['TL'] = TL
+        #     Df['Obs'] = y_test
 
         # Retrieve the threshold values for the current station and variable
-        station_thresholds = thresholds_dict[stationname]
-        
+        station_thresholds = thresholds_dict[station]
+
         # Apply the thresholds for each column
         threshold2 = station_thresholds['GFS2']
-
+        threshold3 = station_thresholds['GFS3']
+        threshold4 = station_thresholds['GFS4']
         # Calculate the final values based on thresholds
         Df['Final'] = Df.apply(
             lambda x: x['TL'] if (x['GFS2'] > threshold2) or (x['GFS3'] > threshold2) else x['CNN'],
             axis=1)
 
         day2 = Df['Final'].iloc[0]
-        
 
-        model_path = os.path.join( './models', '3DayLead', stationname+'_1', 'CNN2122old.h5')
-        model1_path = os.path.join( './models', '3DayLead', stationname+'_1', 'tl.h5')
-        
+        model_path = os.path.join( '.\\models', '3DayLead', station+'_1', 'CNN2122old.h5')
+        model1_path = os.path.join( '.\\models', '3DayLead', station+'_1', 'tl.h5')
+
         model = load_model(model_path)
         model1 = load_model(model1_path)
+
+        #     y_test = np.array(data_y_processed_testing_daily[f'{station}']).astype(float)
+
         # Make predictions using the loaded model
 
         predictions = model.predict(X_test_prec_cnn_lstm_reshaped_3)
         predictions1 = model1.predict(X_test_prec_cnn_lstm_reshaped_3)
-        
-        
+
         data_GFS_prec_stationwise_testing = {}
         data_GFS_prec_stationwise = {}
+    
+        data_GFS_prec_stationwise[station] = pd.DataFrame()
 
-        data_GFS_prec_stationwise[stationname] = pd.DataFrame()
-        
+        station_lat = stations_coordinates.loc[station,'Lat (N)']
+        station_lon = stations_coordinates.loc[station, 'Long (E)']
+
         closest_lat_lon = find_closest_pair(lat_lon, station_lat, station_lon)
         closest_lat = str(closest_lat_lon[0])
         closest_lon = str(closest_lat_lon[1])
 
         selected_cols_testing = data_prec.filter(regex=f'{closest_lat}_{closest_lon}')
-        
-        data_GFS_prec_stationwise_testing[stationname] = copy.deepcopy(selected_cols_testing)
-        
+
+        data_GFS_prec_stationwise_testing[station] = copy.deepcopy(selected_cols_testing)
+
         data_GFS_prec_stationwise_daily = {}
         data_GFS_prec_stationwise_testing_daily = {}
-        
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'] = pd.DataFrame(index=data_GFS_prec_stationwise_testing[f'{stationname}'].index,columns=['1','2','3','4','5','6'])
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,0] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,0:8].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,1] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,8:16].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,2] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,16:24].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,3] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,24:32].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,4] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,32:40].sum(axis = 1)
-        data_GFS_prec_stationwise_testing_daily[f'{stationname}'].iloc[:,5] = data_GFS_prec_stationwise_testing[f'{stationname}'].iloc[:,40:48].sum(axis = 1)
 
-        y_pred_gfs = np.array(data_GFS_prec_stationwise_testing_daily[f'{stationname}']).astype(float)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'] = pd.DataFrame(index=data_GFS_prec_stationwise_testing[f'{station}'].index,columns=['1','2','3','4','5','6'])
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,0] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,0:8].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,1] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,8:16].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,2] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,16:24].sum(axis = 1)
+
+
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,3] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,24:32].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,4] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,32:40].sum(axis = 1)
+        data_GFS_prec_stationwise_testing_daily[f'{station}'].iloc[:,5] = data_GFS_prec_stationwise_testing[f'{station}'].iloc[:,40:48].sum(axis = 1)
+
+        y_pred_gfs = np.array(data_GFS_prec_stationwise_testing_daily[f'{station}']).astype(float)
 
         predictions_GFS = y_pred_gfs[:,2]
 
@@ -417,7 +414,7 @@ def dailyprediction():
         GFS2 = y_pred_gfs[:,1]
         GFS3 = y_pred_gfs[:,2]
         GFS4 = y_pred_gfs[:,3]
-        GFS5 = y_pred_gfs[:,4]
+        GFS5 = y_pred_gfs[:,4] 
         GFS6 = y_pred_gfs[:,5]
         CNN = predictions
         TL = predictions1
@@ -430,21 +427,27 @@ def dailyprediction():
         Df['GFS6'] = GFS6
         Df['CNN'] = CNN
         Df['TL'] = TL
-
-        station_thresholds = thresholds_dict[stationname]
-
+        #     Df['Obs'] = y_test
+        station_thresholds = thresholds_dict[station]
+        # Retrieve the threshold values for the current station and variable
+        #     threshold = np.percentile(Df['GFS3'], 90)
         threshold = station_thresholds['GFS3']
-        
+
+
+        # Calculate the final values based on thresholds
         Df['Final'] = Df.apply(lambda x: x['TL'] if (x['GFS3'] > threshold) or (x['GFS4'] > threshold) or (x['GFS5'] > threshold) else x['CNN'], axis = 1)
-        
-        Df['Final'] = np.nan_to_num(Df['Final'])
-        Day3 = Df['Final'].iloc[0]
+
+        #Df['Final'] = np.nan_to_num(Df['Final'])
+        day3 = Df['Final'].iloc[0]
+        print(station)
+        print(day3)
+
 
         daywiseprediction(
             {
-                'station': station['station_id'],
+                'station': stationFetch['station_id'],
                 'day1': day1,
                 'day2': day2,
-                'day3': Day3
+                'day3': day3
             }
         )

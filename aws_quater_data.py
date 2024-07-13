@@ -1,6 +1,6 @@
 import requests
 import logging
-from connections import awsstation, stationdata
+from connections import awsstation, awsquaterdata
 
 
 def fetch_aws_data(station_id):
@@ -22,11 +22,12 @@ def fetch_aws_data(station_id):
 
 def parse_data(data):
     dummy_data = data.get('dummyTestRaingaugeDataDetails', {})
+    print(dummy_data)
     
     result = {
-        'temp_out': parse_value(dummy_data.get('tempOut')),
-        'out_humidity': parse_value(dummy_data.get('outHumidity')),
-        'wind_speed': parse_value(dummy_data.get('windSpeed')),
+        # 'temp_out': parse_value(dummy_data.get('tempOut')),
+        # 'out_humidity': parse_value(dummy_data.get('outHumidity')),
+        # 'wind_speed': parse_value(dummy_data.get('windSpeed')),
         'rain': parse_value(dummy_data.get('rain')),
     }
     return result
@@ -41,7 +42,7 @@ def parse_value(value):
         return None
 
 
-def fetch_and_store_data():
+def fetch_and_store_quater_data():
     stations = awsstation()
     for station in stations: 
         data = fetch_aws_data(station['station_id'])
@@ -50,11 +51,8 @@ def fetch_and_store_data():
 
 def save_station_data(station, data):
     rainfall = data.get('rain', 0)
-    temperature = data.get('temp_out', 0)
-    humidity = data.get('out_humidity', 0)
-    wind_speed = data.get('wind_speed', 0)
 
-    stationdata(
+    awsquaterdata(
         {
             'station': station['station_id'],
             'rainfall': rainfall
