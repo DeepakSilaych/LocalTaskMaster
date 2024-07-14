@@ -41,6 +41,6 @@ schedule.every().hour.at(":30").do(every_15_min)
 schedule.every().hour.at(":45").do(every_15_min)
 schedule.every().minute.do(system_log)
 
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
