@@ -23,13 +23,10 @@ def every_day():
         })
 
     except Exception as e:
-        try :
-            log ({
-                'log_text' : 'Daily Prediction Failed',
-                'priority' : 1
-            })
-        except Exception as e:  
-            print (e)
+        log ({
+            'log_text' : 'Daily Prediction Failed' + str(e),
+            'priority' : 1
+        })
             
 def system_log():
     try :

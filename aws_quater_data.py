@@ -22,7 +22,7 @@ def fetch_aws_data(station_id):
 
 def parse_data(data):
     dummy_data = data.get('dummyTestRaingaugeDataDetails', {})
-    print(dummy_data)
+    # print(dummy_data)
     
     result = {
         # 'temp_out': parse_value(dummy_data.get('tempOut')),

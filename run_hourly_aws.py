@@ -9,18 +9,15 @@ def every_hour():
     try :
         fetch_and_store_hourly_data()
         log({
-            'log_text' : 'Hourly AWS Data Fetch',
+            'log_text' : 'Hourly Rainfall Data Saved',
             'priority' : 0
         })
 
     except Exception as e:
-        try :
-            log ({
-                'log_text' : 'Hourly AWS Data Failed',
-                'priority' : 1
-            })
-        except Exception as e:  
-            print (e)
+        log ({
+            'log_text' : 'Hourly Rainfall Data Failed ' + str(e),
+            'priority' : 1
+        })
 
 def system_log():
     try :

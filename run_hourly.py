@@ -14,14 +14,10 @@ def every_hour():
         })
 
     except Exception as e:
-        try :
-            log ({
-                'log_text' : 'Hourly Prediction Failed',
-                'priority' : 1
-            })
-        except Exception as e:  
-            print (e)
-
+        log ({
+            'log_text' : 'Hourly Prediction Failed ' + str(e),
+            'priority' : 1
+        })
 def system_log():
     try :
         systemlog({'code':'Hourly Forecast'}) 

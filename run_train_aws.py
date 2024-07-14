@@ -8,20 +8,25 @@ import time
 def every_15_min():
     try :
         fetch_and_store_quater_data()
-        updatetrainstation()
         log({
-            'log_text' : 'Station Data Saved',
+            'log_text' : '15 min rainfall data Saved',
             'priority' : 0
         })
 
     except Exception as e:
-        try :
-            log ({
-                'log_text' : 'Station Data Save Failed',
-                'priority' : 1
-            })
-        except Exception as e:
-            print (e)
+        log ({
+            'log_text' : '15 min rainfall data not saved ' + str(e),
+            'priority' : 1
+        })
+    
+    try :
+        updatetrainstation()
+    except Exception as e:
+        log ({
+            'log_text' : 'Train Station Update Failed ' + str(e),
+            'priority' : 1
+        })
+
 
 def system_log():
     try :
@@ -36,6 +41,6 @@ schedule.every().hour.at(":30").do(every_15_min)
 schedule.every().hour.at(":45").do(every_15_min)
 schedule.every().minute.do(system_log)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)

@@ -14,7 +14,7 @@ def everyday_11_50():
     except Exception as e:
         try :
             log ({
-                'log_text' : 'tweets save failed',
+                'log_text' : 'tweets save failed ' + str(e),
                 'priority' : 2
             })
         except Exception as e:  
@@ -26,7 +26,7 @@ def system_log():
     except Exception as e:
         print (e)
 
-schedule.every().day.at("11:50").do(everyday_11_50)
+schedule.every().day.at("23:50").do(everyday_11_50)
 schedule.every().minute.do(system_log)
 
 while True:
