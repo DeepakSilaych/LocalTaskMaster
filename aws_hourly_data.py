@@ -49,7 +49,6 @@ def fetch_and_store_hourly_data():
             save_station_data(station, data)
 
 def save_station_data(station, data):
-    print(station, data)
     stationdata(
         {
             'station': station['station_id'],

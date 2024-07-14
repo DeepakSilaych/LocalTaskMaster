@@ -1,8 +1,8 @@
 import requests
 import json
 
-BASE_URL = 'http://0.0.0.0:8000/db/'
-# BASE_URL = 'https://api.mumbaiflood.in/db/'
+# BASE_URL = 'http://0.0.0.0:8000/db/'
+BASE_URL = 'https://api.mumbaiflood.in/db/'
 Monitor = 'https://monitor.mumbaiflood.in/'
 
 
