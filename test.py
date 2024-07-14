@@ -1,7 +1,6 @@
-from connections import awsstation, stationdata
+from connections import log
 
-
-for data in awsstation():
-    # fetch id from dict
-    station_id = data['station_id']
-    print("Fetching data for station", station_id)
+log({
+    'log_text' : 'testing autmoation log',
+    'priority' : 1
+})
