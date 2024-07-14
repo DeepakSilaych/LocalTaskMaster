@@ -49,13 +49,13 @@ def tweetdata(data):
     return response.json()
 
 def log(data):
-    # try:
+    try:
         url = Monitor + 'logs/'
         response = requests.post(url, data)
         return response.json()
-    # except Exception as e:
-    #     print(e)
-    #     return None
+    except Exception as e:
+        print(e)
+        return None
 
 def systemlog(data):
     url = Monitor + 'systemlog/'
