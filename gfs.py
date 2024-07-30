@@ -10,12 +10,12 @@ def download_gfs_data():
     x = dt.datetime.now().replace(second=0, microsecond=0)
     hour=6
     day = x.day
-    #day = 12
+    #day = 28
     month = x.month
     year = x.year
     pdate = datetime(year, month, day, 11, 00, 00).strftime("%Y%m%d")
     direc = os.path.join('.\\files', datetime.now().strftime("%d-%m-%Y"))
-    #direc = os.path.join('.\\files', "12-07-2024")
+    #direc = os.path.join('.\\files', "28-07-2024")
     
     direc_prev = os.path.join('.\\files', (datetime.now() - timedelta(days=1)).strftime("%d-%m-%Y"))
     

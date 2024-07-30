@@ -55,6 +55,3 @@ def save_station_data(station, data):
             'rainfall': data
         }
     )
-    
-
-fetch_and_store_hourly_data()

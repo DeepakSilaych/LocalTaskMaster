@@ -38,6 +38,8 @@ def system_log():
 schedule.every().day.at("16:20").do(every_day)
 schedule.every().minute.do(system_log)
 
+every_day()
+
 while True:
     schedule.run_pending()
     time.sleep(1)

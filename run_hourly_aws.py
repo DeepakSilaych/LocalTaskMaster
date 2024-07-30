@@ -4,7 +4,6 @@ import time
 from connections import log, systemlog
 
 
-
 def every_hour():
     try :
         fetch_and_store_hourly_data()

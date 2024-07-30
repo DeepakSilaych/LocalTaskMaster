@@ -24,7 +24,7 @@ def dailyprediction():
                     columns_prec.append(f'{i}_{j}_{k}_{time_steps:03d}')
     x = dt.datetime.now().replace(second=0, microsecond=0)
     day= x.day
-    #day= 12
+    #day= 28
     month = x.month
     year = x.year
 
@@ -214,7 +214,7 @@ def dailyprediction():
         #Return the closest pair of latitude and longitude
         return lat_lon_array[closest_index]
 
-    with open(os.path.join('.\\models', 'daily_threshold.pkl'), 'rb') as f:
+    with open(os.path.join('.\\models', 'thresholds_dict_90percentile.pkl'), 'rb') as f:
         thresholds_dict = pickle.load(f)
 
 
@@ -284,11 +284,21 @@ def dailyprediction():
 
         # Calculate the final values based on thresholds
         Df['Final'] = Df.apply(
-            lambda x: x['TL'] if (x['GFS'] > threshold) or (x['GFS2'] > threshold) or (x['GFS3'] > threshold) else x['CNN'],
+            lambda x: x['TL'] if (x['GFS'] > threshold) or (x['GFS2'] > threshold2) or (x['GFS3'] > threshold3) else x['CNN'],
             axis=1)
+
+        #Df['Final'] = Df.apply(
+        #    lambda x: x['TL'],
+        #    axis=1)
+
+        #Df['Final'] = Df.apply(
+        #    lambda x: x['CNN'],
+        #    axis=1)
 
 
         day1 = Df['Final'].iloc[0]
+        print(station)
+        print(day1)
         #print(f"Predicted values for station {station}:")
         #print(day1)
 
@@ -361,6 +371,10 @@ def dailyprediction():
         Df['Final'] = Df.apply(
             lambda x: x['TL'] if (x['GFS2'] > threshold2) or (x['GFS3'] > threshold2) else x['CNN'],
             axis=1)
+
+        #Df['Final'] = Df.apply(
+        #    lambda x: x['TL'],
+        #    axis=1)
 
         day2 = Df['Final'].iloc[0]
 
@@ -437,15 +451,25 @@ def dailyprediction():
         # Calculate the final values based on thresholds
         Df['Final'] = Df.apply(lambda x: x['TL'] if (x['GFS3'] > threshold) or (x['GFS4'] > threshold) or (x['GFS5'] > threshold) else x['CNN'], axis = 1)
 
+        #Df['Final'] = Df.apply(
+        #    lambda x: x['TL'],
+        #    axis=1)
+
+        #Df['Final'] = Df.apply(
+        #    lambda x: x['CNN'],
+        #    axis=1)
+
+
         #Df['Final'] = np.nan_to_num(Df['Final'])
         day3 = Df['Final'].iloc[0]
-        print(station)
-        print(day3)
+       #print(station)
+       # print(day3)
 
 
         daywiseprediction(
             {
                 'station': stationFetch['station_id'],
+                #"date": "2024-07-07 23:59:59",
                 'day1': day1,
                 'day2': day2,
                 'day3': day3

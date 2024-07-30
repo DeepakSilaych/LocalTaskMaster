@@ -1,6 +1,5 @@
 import requests
-import logging
-from connections import awsstation, awsquaterdata
+from connections import awsstation, awsquaterdata, log
 
 
 def fetch_aws_data(station_id):
@@ -17,7 +16,10 @@ def fetch_aws_data(station_id):
         return parse_data(data)
     
     except requests.exceptions.RequestException as e:
-        logging.error(f"Failed to fetch data for station {station_id}: {e}")
+        log({
+            'message': f"Failed to fetch data for station {station_id}: {e}",
+            'level': 1
+        })
         return
 
 def parse_data(data):
@@ -35,27 +37,29 @@ def parse_data(data):
 def parse_value(value):
     if value is None or value == '---':
         return None
-    try:
-        return float(value)
-    except ValueError:
-        logging.error(f"Failed to parse value '{value}' as float.")
-        return None
+    return float(value)
 
-
-def fetch_and_store_quater_data():
-    stations = awsstation()
-    for station in stations: 
-        data = fetch_aws_data(station['station_id'])
-        if data:
-            save_station_data(station, data)
 
 def save_station_data(station, data):
     rainfall = data.get('rain', 0)
+    awsquaterdata({
+        "station": station['station_id'],
+        "rainfall": rainfall
+    })
 
-    awsquaterdata(
-        {
-            'station': station['station_id'],
-            'rainfall': rainfall
-        }
-    )
-    
+def fetch_and_store_quater_data():
+    stations = awsstation()
+    for station in stations:
+        station_id = station['station_id']
+        data = fetch_aws_data(station_id)
+        try :
+            save_station_data(station, data)
+            
+        except Exception as e:
+            print(e, station_id, data)
+            log({
+                'message': f"Failed to fetch or store data for station {station_id}: {e}",
+                'level': 1
+            }) 
+
+fetch_and_store_quater_data()
